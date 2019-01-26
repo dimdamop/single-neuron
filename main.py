@@ -1,56 +1,72 @@
+from math import floor
 import numpy as np
 import numpy.random as rand
+from numpy.linalg import norm
+
 
 class LinearActivationNeuron(object):
 
     def __init__(self, dims, param_initializer=rand.randn):
-        self.weights = param_initializer(dims)
-        self.bias = param_initializer(1)[0]
+        # We group all the parameters in one vector
+        self.theta = param_initializer(dims + 1)
 
-    def response(self, X):
-        y_hat = X.dot(self.weights) + self.bias
+    def bias(self):
+        return self.theta[0]
+
+    def weights(self):
+        return self.theta[1:]
+
+    def predict(self, X):
+        y_hat = X.dot(self.weights()) + self.bias()
         return y_hat
 
-    def RMSE_gradient_descent(self, X, y, lrate, epochs):
+    def fit(self, X, y, lrate, epochs, on_epoch_end_callback=None):
 
         N = X.shape[0]
-        # include the intercept, so that we don' t have to add the bias each time
+        assert N > 0, 'At least one training example is required'
+
+        # we add an intercept, to avoid the separate treatment of the bias
         Xn = np.insert(X, 0, 1, axis=1)
-        theta = np.insert(self.weights, 0, self.bias, axis=0)
 
-        for i in range(epochs):
+        for e in range(epochs):
 
-            y_hat = Xn.dot(theta)
+            y_hat = Xn.dot(self.theta)
             losses = y - y_hat
-            # the gradient of the root mean square error loss for our model
+            # the gradient of the RMSE
             gradient_of_loss = - 2 * Xn.T.dot(losses) / N
-            theta -= lrate * gradient_of_loss
+            self.theta -= lrate * gradient_of_loss
+            
+            if on_epoch_end_callback:
+                on_epoch_end_callback(e, self)
 
-        self.bias = theta[0]
-        self.weights = theta[1:]
 
-
-def predict_with_linear_neuron(X_train, y_train, X_test, lrate, epochs):
+def predict_with_linear_neuron(X_train, y_train, X_test, lrate, epochs, 
+                        on_epoch_end_callback=None):
 
     dims = X_train.shape[1]
-    neuron = LinearActivationNeuron(dims) 
-    neuron = LinearActivationNeuron(dims, param_initializer=np.zeros) 
-    neuron.RMSE_gradient_descent(X_train, y_train, lrate, epochs)
-    return neuron.response(X_test)
+    model = LinearActivationNeuron(dims, param_initializer=np.zeros) 
+    model.fit(X_train, y_train, lrate, epochs, on_epoch_end_callback)
+    predictions = model.predict(X_test)
+    parameters = model.theta
+    
+    return predictions, parameters
 
 
 def predict_with_linear_regression(X_train, y_train, X_test):
 
     from sklearn.linear_model import LinearRegression as LR
 
-    lr_model = LR().fit(X_train, y_train)
-    return lr_model.predict(X_test)
-
+    model = LR()
+    model.fit(X_train, y_train)
+    predictions = model.predict(X_test)
+    parameters = np.insert(model.coef_, 0, model.intercept_)
+    
+    return predictions, parameters
 
 def parse_csv(fn, sep=',', name_delim='"'):
 
-    lines = open(fn).readlines()
-    assert len(lines) > 0, 'No lines found in {0}'.format(fn)
+    lines = [ line.strip() for line in open(fn) ] 
+    assert len(lines) > 1, 'No lines found in {0}'.format(fn)
 
     # The first line has the names of the columns
     names = lines.pop(0).split(sep)
@@ -68,6 +84,47 @@ def parse_csv(fn, sep=',', name_delim='"'):
     return values, names
 
 
+class RmseRecorder(object):
+
+    def __init__(self, X, y, epochs): 
+        self.X = X 
+        self.y = y
+        self.losses = np.full(epochs, np.nan)
+
+    def rmse(a, b):
+        e = a - b
+        mse = norm(e).mean()
+        return np.sqrt(mse)
+
+    def record(self, epoch, model):
+        y_hat = model.predict(self.X)
+        self.losses[epoch] = RmseRecorder.rmse(self.y, y_hat)
+
+
+def plot(method_names, losses_method_a, loss_method_b, loglog=False, fn_out=None):
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+
+    ax.set_xlabel('Epoch')
+    ax.set_ylabel('Loss')
+
+    # losses with the first method
+    if loglog:
+        ax.loglog(losses_method_a, '--b.', label=method_names[0])
+    else:
+        ax.plot(losses_method_a, '--b.', label=method_names[0])
+
+    # loss with the second method
+    ax.plot((0, len(losses_method_a)), (loss_method_b, loss_method_b) , 'r', label=method_names[1])
+
+    ax.legend()
+    plt.show()
+
+    if fn_out:
+        fig.savefig(fn_out)
+
 def main(csv_fn, target_name, testing_set_ratio, lrate, epochs, normalize_features=True):
     """
         normalize_features: linearly rescale 
@@ -75,55 +132,69 @@ def main(csv_fn, target_name, testing_set_ratio, lrate, epochs, normalize_featur
 
     values, names = parse_csv(csv_fn)
 
-    # If a name for the target variable has been provided, we find its index,  
+    # If a name for the target variable has been provided, we locate its index, 
     # otherwise we treat the last variable in the csv_fn as the target one.
     if target_name:
-    	target_idx = values.index(target_name)
+        target_idx = names.index(target_name)
     else:
-	target_idx = len(names) - 1
+        target_idx = len(names) - 1
     
     if target_idx < 0:
-        print('No feature named \'{0}\' was found in the dataset {1}.'.format(target_name, csv_fn))
+        print('No feature named \'{0}\' was found in the dataset {1}.'.format(
+                                                            target_name, csv_fn))
         print('The found names are the: {0}'.format(names))
         return
 
+    # shuffle the dataset (for the sampling that follows) and separate it into 
+    # features and a target variable
+    rand.shuffle(values)
     N, m = values.shape
     feature_idxs = list(range(m))
     del feature_idxs[target_idx]
+    X = values[:, feature_idxs]
+    y = values[:, target_idx]
 
-    # shuffle the dataset (for the sampling that follows) and separate it into 
-    # features and a target variable.
-    rand.shuffle(values)
-    X = values[:, target_idx]
-    y = values[:, features_idxs]
-
-    # sample training and testing sets TODO: round is not ok
-    test_n = int(round(N * testing_set_ratio))
+    # sample training and testing sets
+    test_n = int(floor(N * testing_set_ratio + .5))
     X_test = X[:test_n]
     y_test = y[:test_n]
     X_train = X[test_n:]
     y_train = y[test_n:]
 
     if normalize_features:
-
-        # we normalize based on the statistics of the training set only
+        # we normalize based on the statistics of only the training set
         mu = np.mean(X_train, axis=0)
         std = np.std(X_train, axis=0)
 
         X_train = (X_train - mu) / std
         X_test = (X_test - mu) / std
 
-    # predict with the two methods
-    y_pred_ne = predict_with_linear_neuron(X_train, y_train, X_test, lrate, epochs)
-    y_pred_lr = predict_with_linear_regression(X_train, y_train, X_test)
+    # an object to record the loss on the testing set after every epoch
+    recorder = RmseRecorder(X=X_test, y=y_test, epochs=epochs)
 
-    print('NE: {0}'.format(np.abs(y_pred_ne - y_test).mean()))
-    print('LR: {0}'.format(np.abs(y_pred_lr - y_test).mean()))
+    # predict with the two methods
+    ne_pred, ne_params = predict_with_linear_neuron(X_train, y_train, X_test, 
+                            lrate, epochs, recorder.record)
+    lr_pred, lr_params = predict_with_linear_regression(X_train, y_train, X_test)
+
+    method_names = ('a single neuron', 'linear regression')
+    method_losses = (RmseRecorder.rmse(ne_pred, y_test), 
+                     RmseRecorder.rmse(lr_pred, y_test))
+    method_params = (ne_params, lr_params)
+
+    # print results
+    for name, loss, params in zip(method_names, method_losses, method_params):
+        print('The loss with {0} is: {1}'.format(name, loss))
+        print('The parameteres of {0} are: {1!s}'.format(name, params))
+
+    # show how the loss of a single neuron model during gradient descent 
+    # compares to that of LR
+    plot(method_names, recorder.losses, method_losses[1])
 
 if __name__ != None:
     
-    main(csv_fn='mass_boston.csv', 
+    main(csv_fn='dataset/mass_boston.csv', 
          testing_set_ratio=0.1, 
          target_name='medv',
          lrate=0.1, 
-         epochs=10000)
+         epochs=100)
