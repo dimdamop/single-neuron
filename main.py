@@ -39,6 +39,11 @@ class LinearActivationNeuron(object):
             if on_epoch_end_callback:
                 on_epoch_end_callback(e, self)
 
+        if not np.isfinite(self.theta).all():
+            print('\nAt least one parameter has an invalid value after fitting '
+                  'the neuron model. That might be caused by a too large '
+                  'learning rate and/or by having the \'normalize\' option disabled.\n')
+
 
 def predict_with_linear_neuron(X_train, y_train, X_test, lrate, epochs, 
                         on_epoch_end_callback=None):
@@ -135,15 +140,14 @@ def main(csv_fn, target_name, testing_set_ratio, lrate, epochs, normalize_featur
     # If a name for the target variable has been provided, we locate its index, 
     # otherwise we treat the last variable in the csv_fn as the target one.
     if target_name:
-        target_idx = names.index(target_name)
+        try: target_idx = names.index(target_name)
+        except ValueError:
+            print('No feature named \'{0}\' was found in the '
+                  'dataset {1}.'.format(target_name, csv_fn))
+            print('The found names are the: {0}'.format(names))
+            return
     else:
         target_idx = len(names) - 1
-    
-    if target_idx < 0:
-        print('No feature named \'{0}\' was found in the dataset {1}.'.format(
-                                                            target_name, csv_fn))
-        print('The found names are the: {0}'.format(names))
-        return
 
     # shuffle the dataset (for the sampling that follows) and separate it into 
     # features and a target variable
@@ -185,16 +189,18 @@ def main(csv_fn, target_name, testing_set_ratio, lrate, epochs, normalize_featur
     # print results
     for name, loss, params in zip(method_names, method_losses, method_params):
         print('The loss with {0} is: {1}'.format(name, loss))
-        print('The parameteres of {0} are: {1!s}'.format(name, params))
+        print('The parameteres of {0} are: \n{1!s}\n'.format(name, params))
 
     # show how the loss of a single neuron model during gradient descent 
     # compares to that of LR
     plot(method_names, recorder.losses, method_losses[1])
 
 if __name__ != None:
-    
+
+    np.set_printoptions(precision=4)
+
     main(csv_fn='dataset/mass_boston.csv', 
          testing_set_ratio=0.1, 
-         target_name='medv',
+         target_name=None,
          lrate=0.1, 
-         epochs=100)
+         epochs=200)
