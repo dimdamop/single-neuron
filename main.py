@@ -106,25 +106,36 @@ class RmseRecorder(object):
         self.losses[epoch] = RmseRecorder.rmse(self.y, y_hat)
 
 
-def plot(method_names, losses_method_a, loss_method_b, loglog=False, fn_out=None):
+def plot(method_names, losses_method_a, loss_method_b, 
+         title=None, xlabel=None, ylabel=None, loglog=False, fn_out=None):
 
     import matplotlib.pyplot as plt
 
     fig, ax = plt.subplots()
 
-    ax.set_xlabel('Epoch')
-    ax.set_ylabel('Loss')
+    ax.tick_params(axis='both', which='major', labelsize=12)
+    ax.tick_params(axis='both', which='minor', labelsize=10)
+
+    if title:
+        ax.set_title(title, fontsize=20)
+
+    if xlabel:
+        ax.set_xlabel(xlabel, fontsize=15)
+
+    if ylabel:
+        ax.set_ylabel(ylabel, fontsize=15)
 
     # losses with the first method
     if loglog:
-        ax.loglog(losses_method_a, '--b.', label=method_names[0])
+        ax.loglog(losses_method_a, '-b.', label=method_names[0])
     else:
-        ax.plot(losses_method_a, '--b.', label=method_names[0])
+        ax.plot(losses_method_a, '-b.', label=method_names[0])
 
     # loss with the second method
-    ax.plot((0, len(losses_method_a)), (loss_method_b, loss_method_b) , 'r', label=method_names[1])
+    ax.plot((0, len(losses_method_a)), (loss_method_b, loss_method_b), '--r', 
+            label=method_names[1])
 
-    ax.legend()
+    ax.legend(fontsize=15)
     plt.show()
 
     if fn_out:
@@ -148,6 +159,7 @@ def main(csv_fn, target_name, testing_set_ratio, lrate, epochs, normalize_featur
             return
     else:
         target_idx = len(names) - 1
+        target_name = names[-1]
 
     # shuffle the dataset (for the sampling that follows) and separate it into 
     # features and a target variable
@@ -181,7 +193,7 @@ def main(csv_fn, target_name, testing_set_ratio, lrate, epochs, normalize_featur
                             lrate, epochs, recorder.record)
     lr_pred, lr_params = predict_with_linear_regression(X_train, y_train, X_test)
 
-    method_names = ('a single neuron', 'linear regression')
+    method_names = ('a single linear neuron', 'linear regression baseline')
     method_losses = (RmseRecorder.rmse(ne_pred, y_test), 
                      RmseRecorder.rmse(lr_pred, y_test))
     method_params = (ne_params, lr_params)
@@ -193,11 +205,16 @@ def main(csv_fn, target_name, testing_set_ratio, lrate, epochs, normalize_featur
 
     # show how the loss of a single neuron model during gradient descent 
     # compares to that of LR
-    plot(method_names, recorder.losses, method_losses[1])
+    plot(method_names, recorder.losses, method_losses[1], 
+         title='RMSE for regressing "{0}" using a linear neuron model trained '
+               'with gradient descent (learning rate {1})'.
+                    format(target_name, lrate),
+         xlabel='epoch', 
+         ylabel='RMSE (on the validation set)')
 
 if __name__ != None:
 
-    np.set_printoptions(precision=4)
+    np.set_printoptions(precision=4, suppress=True)
 
     main(csv_fn='dataset/mass_boston.csv', 
          testing_set_ratio=0.1, 
