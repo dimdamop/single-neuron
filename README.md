@@ -59,21 +59,45 @@ Notice how the values for the bias and the weights of the neuron are very close 
 ## Increasing the number of epochs
 
 Instead of 200 epochs, let' s specify 10000: 
-The loss with a single linear neuron is: 5.225572875632677
-The parameteres of a single linear neuron are:
 ```console
 user@system:~$ neuron-regress.py --csv dataset/mass_boston.csv --epochs 10000 --loglog
-[22.7266 -0.8988  0.9958  0.2414  0.7171 -1.9701  2.8773 -0.0698 -3.0344
-  2.5446 -2.1036 -2.1     0.7635 -3.6796]
+The loss with a single linear neuron is: 5.148498158724566
+The parameteres of a single linear neuron are: 
+[22.7974 -1.0409  1.1265  0.0578  0.7052 -2.0971  2.5988  0.073  -3.1709
+  2.9265 -2.1423 -2.1238  0.7868 -3.9471]
 
-  The loss with linear regression baseline is: 5.225572875632677
-  The parameteres of linear regression baseline are:
-  [22.7266 -0.8988  0.9958  0.2414  0.7171 -1.9701  2.8773 -0.0698 -3.0344
-    2.5446 -2.1036 -2.1     0.7635 -3.6796]
+The loss with linear regression baseline is: 5.148498158724566
+The parameteres of linear regression baseline are: 
+[22.7974 -1.0409  1.1265  0.0578  0.7052 -2.0971  2.5988  0.073  -3.1709
+  2.9265 -2.1423 -2.1238  0.7868 -3.9471]
 ````
 
 Within the displayed accuracy, the parameters of the neuron are equal to those learnt with linear regression. We have also specified the `--loglog` flag, which makes it a bit easier to isolate different regions in the plots:
-
 ![Plot with many iterations](examples/epochs-10000-lr-01.png)
 
+## Convergence
+Gradient descent, at least as implemented here, is not guaranteed to converge. This can happen when the learning rate is too large for the dataset at hand.
 
+By default, `neuron-regress.py` does not apply gradient descent  to the supplied dataset, but to a _linearly rescaled_ version of it. This operation attempts to bring all the features to the same scale, which can improve the convergence properties of gradient descent, especially if the some features are originally in very different scales.
+
+For example, if we deactivate the rescaling operation for the "mass_boston.csv" dataset by passing the `--no-norm`, we have to use extremely low learning rates to achieve convergence, which also implies that the training process takes much more time to complete.
+
+In fact, even with a learning rate as low as 10</sup>-5</sup> gradient descent does not converge, as shows on the results and the plot below:
+
+```console
+user@system:~$ neuron-regress.py --csv dataset/mass_boston.csv --epochs 10 --lrate 0.00001 --no-norm
+The loss with a single linear neuron is: 48625.10860971238
+The parameteres of a single linear neuron are: 
+[  -1015.0908   -4616.5819   -9997.5768  -12165.4978     -63.4424
+    -575.1853   -6321.3836  -72239.3525   -3651.7908  -11098.3452
+ -445384.4468  -18967.6505 -362214.0019  -13608.8978]
+
+The loss with linear regression baseline is: 6.074445952981716
+The parameteres of linear regression baseline are: 
+[ 39.255   -0.113    0.0562   0.0094   1.9957 -17.9045   3.4433  -0.0027
+  -1.5715   0.309   -0.013   -0.927    0.0085  -0.5059]
+
+
+```
+
+![Plot illustrating non-convergence](examples/epochs-10-lr-1e-5-no-norm.png)
