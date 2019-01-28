@@ -72,7 +72,7 @@ The parameteres of linear regression baseline are:
   2.9265 -2.1423 -2.1238  0.7868 -3.9471]
 ````
 
-Within the displayed accuracy, the parameters of the neuron are equal to those learnt with linear regression. We have also specified the `--loglog` flag, which makes it a bit easier to isolate different regions in the plots:
+Within the displayed accuracy, the parameters of the neuron are equal to those learnt with linear regression. We have also specified the `--loglog` flag, which makes it a bit easier to isolate the different regions in the plot:
 ![Plot with many iterations](examples/epochs-10000-lr-01.png)
 
 ## Convergence
