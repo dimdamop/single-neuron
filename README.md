@@ -14,7 +14,7 @@ The neuron model gets trained with batch gradient descent on the root mean squar
 
 ## Command line arguments
 
-There is just one required argument (the --csv), the rest are optional. In particular:
+There is just one required argument (the `--csv`), the rest are optional. In particular:
 
 * -h, --help
 Show a detailed help message and exit.
@@ -37,7 +37,7 @@ Use a logarithmic scale for the two axes of the plot. This can be useful if you 
 
 ## Invocation with the default values 
 
-As shown in [Command line arguments](command-line-arguments) by default `neuron-regress.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. The results look like this:
+As shown in [Command line arguments](##command-line-arguments) by default `neuron-regress.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. The results look like this:
 ```console
 user@system:~$ neuron-regress.py --csv dataset/mass_boston.csv
 
