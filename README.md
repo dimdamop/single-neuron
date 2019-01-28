@@ -74,6 +74,6 @@ user@system:~$ neuron-regress.py --csv dataset/mass_boston.csv --epochs 10000 --
 
 Within the displayed accuracy, the parameters of the neuron are equal to those learnt with linear regression. We have also specified the `--loglog` flag, which makes it a bit easier to isolate different regions in the plots:
 
-![Plot with many iterations](examples/epochs-10000-lr-005.png)
+![Plot with many iterations](examples/epochs-10000-lr-01.png)
 
 
