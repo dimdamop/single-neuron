@@ -29,7 +29,29 @@ Number of epochs (iterations) to use for gradient descent (default: 200).
 * --lrate LRATE
 Learning rate to use for gradient descent (default: 0.1)
 * --no-norm
-By default, the features are linearly rescaled to so that the training set has a zero mean and a standard deviation of one. This switch prevents this default behavior (default: False).
+By default, each of the features is linearly rescaled to so that its value in the training set has a zero mean and a standard deviation of one. This switch prevents this default behavior (default: False).
 *  --loglog
 Use a logarithmic scale for the two axes of the plot. This can be useful if you have specified many epochs (default: False).
+
+# Examples
+
+## Invocation with the default values 
+
+```console
+user@system:~$ neuron-regress.py --csv dataset/mass_boston.csv
+
+The loss with a single linear neuron is: 6.59579363684324
+The parameteres of a single linear neuron are: 
+[22.5668 -0.963   1.0831 -0.0691  0.7951 -1.7578  2.9326 -0.2769 -2.981
+  2.5234 -1.9742 -1.9826  0.9789 -3.3682]
+
+  The loss with linear regression baseline is: 6.594923271665585
+  The parameteres of linear regression baseline are: 
+  [22.5668 -0.9749  1.1018 -0.0097  0.7857 -1.7737  2.9219 -0.2669 -2.9818
+    2.67   -2.1389 -1.9891  0.9801 -3.3747]
+```
+
+Notice how the values for the bias and the weights of the neuron are very close to those of the linear regression model. The generated plot is shown below:
+
+![Plot with default arguments](examples/default-parameters.png)
 
