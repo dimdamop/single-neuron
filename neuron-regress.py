@@ -388,10 +388,10 @@ if __name__ == '__main__':
                         type=float)
 
     parser.add_argument('--no-norm', 
-                        help='By default, the features are linearly rescaled to'
-                             ' so that the training set has a zero mean and a '
-                             'standard deviation of one. This switch prevents '
-                             'this default behavior', 
+                        help='By default, each of the features is linearly '
+                             'rescaled to so that its value in the training set'
+                             ' has a zero mean and a standard deviation of one.'
+                             ' This switch prevents this default behavior',  
                         action='store_true', 
                         default=False)
 
