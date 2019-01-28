@@ -37,6 +37,7 @@ Use a logarithmic scale for the two axes of the plot. This can be useful if you 
 
 ## Invocation with the default values 
 
+As shown in [Command line arguments](command-line-arguments) by default `neuron-regress.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. The results look like this:
 ```console
 user@system:~$ neuron-regress.py --csv dataset/mass_boston.csv
 
@@ -54,4 +55,25 @@ The parameteres of a single linear neuron are:
 Notice how the values for the bias and the weights of the neuron are very close to those of the linear regression model. The generated plot is shown below:
 
 ![Plot with default arguments](examples/default-parameters.png)
+
+## Increasing the number of epochs
+
+Instead of 200 epochs, let' s specify 10000: 
+The loss with a single linear neuron is: 5.225572875632677
+The parameteres of a single linear neuron are:
+```console
+user@system:~$ neuron-regress.py --csv dataset/mass_boston.csv --epochs 10000 --loglog
+[22.7266 -0.8988  0.9958  0.2414  0.7171 -1.9701  2.8773 -0.0698 -3.0344
+  2.5446 -2.1036 -2.1     0.7635 -3.6796]
+
+  The loss with linear regression baseline is: 5.225572875632677
+  The parameteres of linear regression baseline are:
+  [22.7266 -0.8988  0.9958  0.2414  0.7171 -1.9701  2.8773 -0.0698 -3.0344
+    2.5446 -2.1036 -2.1     0.7635 -3.6796]
+````
+
+Within the displayed accuracy, the parameters of the neuron are equal to those learnt with linear regression. We have also specified the `--loglog` flag, which makes it a bit easier to isolate different regions in the plots:
+
+![Plot with many iterations](examples/epochs-10000-lr-005.png)
+
 
