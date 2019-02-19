@@ -23,21 +23,22 @@ class Neuron(object):
 
     @classmethod
     def description(cls):
-    """ Returns a human-readable description of the class """
+        """ Returns a human-readable description of the class """
+
         raise NotImplementedError
 
     @classmethod
     def loss(cls, y_hat, y):
-    """ 
-    The loss function
-    
-    Args:
-        y_hat (np.ndarray of shape N,): The vector of the predictions
-        y (np.ndarray of shape N,): The vector of the ground truth values
+        """ 
+        The loss function
+        
+        Args:
+            y_hat (np.ndarray of shape N,): The vector of the predictions
+            y (np.ndarray of shape N,): The vector of the ground truth values
 
-    Returns:
-        The value of the loss function
-    """
+        Returns:
+            The value of the loss function
+        """
         raise NotImplementedError
 
     def bias(self):
@@ -256,7 +257,6 @@ def predict_with_neuron(model_class, X_train, y_train, X_valid,
     parameters = model.theta
     
     return predictions, parameters
-
 
 def predict_with_linear_regression(X_train, y_train, X_valid):
     """

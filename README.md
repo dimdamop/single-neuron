@@ -65,7 +65,7 @@ The parameteres of a single linear neuron are:
 
 Notice how the values for the bias and the weights of the neuron are very close to those of the linear regression model. The generated plot is shown below:
 
-![Plot with default arguments](examples/default-parameters.png)
+![Plot with default arguments](png/default-parameters.png)
 
 ## Increasing the number of epochs
 
@@ -84,7 +84,7 @@ The parameteres of linear regression baseline are:
 ````
 
 Within the displayed accuracy, the parameters of the neuron are equal to those learnt with linear regression. We have also specified the `--loglog` flag, which makes it a bit easier to isolate the different regions in the plot:
-![Plot with many iterations](examples/epochs-10000-lr-01.png)
+![Plot with many iterations](png/epochs-10000-lr-01.png)
 
 ## Convergence
 Gradient descent, at least as implemented here, is not guaranteed to converge. This can happen when the learning rate is too large for the dataset at hand.
@@ -109,7 +109,7 @@ The parameteres of linear regression baseline are:
   -1.5715   0.309   -0.013   -0.927    0.0085  -0.5059]
 ```
 
-![Plot illustrating non-convergence](examples/epochs-10-lr-1e-5-no-norm.png)
+![Plot illustrating non-convergence](png/epochs-10-lr-1e-5-no-norm.png)
 
 ## Classification
 
