@@ -1,9 +1,12 @@
+# Author: Dimitrios Damopoulos
+# MIT license (see LICENCE.txt in the top-level folder)
+
 import numpy as np
 import numpy.random as random
 import math_utils as M
 
 class Neuron(object):
-    """ A model of a single neuron """
+    """ A trainable model of a single neuron """
 
     def __init__(self, dims, param_initializer=random.randn):
         """
@@ -87,14 +90,14 @@ class Neuron(object):
 
 
 class LinearNeuron(Neuron):
-    """ A model of a neuron with an identity activation function. """
+    """ A neuron with an identity activation function, trained on RMSE """
 
     def activation(self, stimu):
         return stimu
 
     @classmethod
     def description(cls):
-        return 'Neuron with an identity activation function'
+        return 'Neuron with an identity activation function (trained on RMSE)'
 
     @classmethod
     def loss(cls, y_hat, y):
@@ -107,7 +110,7 @@ class LinearNeuron(Neuron):
 
 
 class ReluNeuron(Neuron):
-    """ A model of a linear neuron """
+    """ A neuron with a ReLU activation function, trained on the RMSE error """
 
     def activation(self, stimu):
         return np.maximum(np.zeros(stimu.shape), stimu)
@@ -135,7 +138,8 @@ class ReluNeuron(Neuron):
         N_masked = stimu_masked.shape[0]
         
         if N_masked > 0: 
-            gradient_masked = M.gradient_of_rmse(stimu_masked, y_masked, Xn_masked) 
+            gradient_masked = M.gradient_of_rmse(
+                                            stimu_masked, y_masked, Xn_masked) 
 
             # we have to rescale, since so far the gradient has been calculated as 
             # the mean over only the positive stimuli.
@@ -148,8 +152,8 @@ class ReluNeuron(Neuron):
 
 class SigmoidNeuron(Neuron):
     
-    """ A model of a neuron with a sigmoid activation function and trained on 
-        the cross-entropy loss."""
+    """ A model of a neuron with a sigmoid activation function trained on the 
+    log-likelihood loss (which is basically the cross-entropy loss)"""
 
     def activation(self, stimu):
         return M.sigmoid(stimu)
@@ -162,14 +166,14 @@ class SigmoidNeuron(Neuron):
     def loss(self, y_hat, y):
         N = y.shape[0]
         assert N > 0, ('At least one sample is required in order to compute the '
-                      'cross entropy')
+                      'log-likehood loss')
         return M.cross_entropy(y_hat, y) / N 
 
     def gradient_of_loss(self, Xn, y):
 
         N = y.shape[0]
-        assert N > 0, ('At least one sample is required in order to compute the'
-                      ' cross-entropy loss')
+        assert N > 0, ('At least one sample is required in order to compute the '
+                      'gradient of the log-likehood loss')
 
         stimu = np.dot(Xn, self.theta)
         y_hat = self.activation(stimu) 
@@ -220,27 +224,6 @@ def predict_with_linear_regression(X_train, y_train, X_valid):
     from sklearn.linear_model import LinearRegression as LR
 
     model = LR()
-    model.fit(X_train, y_train)
-    predictions = model.predict(X_valid)
-    parameters = np.insert(model.coef_, 0, model.intercept_)
-    
-    return predictions, parameters
-
-
-def predict_with_logistic_regression(X_train, y_train, X_valid):
-    """
-    Args:
-        X_train (np.ndarray of shape (N, m): Features of the training set
-        y_train (np.ndarray of shape (N,): Target values of the training set
-        X_valid (np.ndarray of shape (V, m): Features of the validation set
-
-    Returns:
-        The predictions of linear regression for X_valid and a np.ndarray 
-        vector with the parameters of the trained model.
-    """
-    from sklearn.linear_model import LogisticRegression as LR
-
-    model = LR(max_iter=10000)
     model.fit(X_train, y_train)
     predictions = model.predict(X_valid)
     parameters = np.insert(model.coef_, 0, model.intercept_)

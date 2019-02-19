@@ -1,3 +1,6 @@
+# Author: Dimitrios Damopoulos
+# MIT license (see LICENCE.txt in the top-level folder)
+
 import numpy as np
 from numpy.linalg import norm
 

@@ -3,9 +3,9 @@
 
 # Syntax
 ```
-neuron-regress.py [-h] --csv FILENAME [--target-name NAME]
-                  [--validation-set-ratio RATIO] [--epochs EPOCHS]
-                  [--lrate LRATE] [--no-norm] [--loglog]
+single-neuron.py [-h] --csv FILENAME [--target-name NAME]
+                 [--validation-set-ratio RATIO] [--epochs EPOCHS]
+                 [--lrate LRATE] [--no-norm] [--loglog]
 ```
 
 # Description
@@ -41,7 +41,7 @@ Use a logarithmic scale for the two axes of the plot. This can be useful if you 
 
 ## Invocation with the default values 
 
-As shown in [Command line arguments](##command-line-arguments) by default `neuron-regress.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. The results look like this:
+As shown in [Command line arguments](#command-line-arguments) by default `neuron-regress.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. The results look like this:
 ```console
 user@system:~$ neuron-regress.py --csv dataset/mass_boston.csv
 

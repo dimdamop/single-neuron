@@ -1,8 +1,8 @@
 #!/usr/bin/env python
-# Dimitrios Damopoulos, 2019-01-28
-# Online: https://github.com/dimdamop/linear-neuron-regression (private 
-#         repository, contact dimdamop@hotmail.com for access).
-#
+
+# Author: Dimitrios Damopoulos
+# MIT license (see LICENCE.txt in the top-level folder)
+
 """ A script for training and using a single linear neuron as a regressor.
 
 The following functionality is provided by this script: (a) A class for training 
@@ -14,7 +14,8 @@ linear regression.
 This is a standalone script, i.e. it can be invoked directly in the command
 line. Refer to the accompanying README.md for details. """
 
-from collections import namedtuple
+from sys import stdout
+import time
 from math import floor
 import numpy as np
 import numpy.random as rand
@@ -31,6 +32,7 @@ class LossRecorder(object):
         Args:
             X (np.ndarray of shape (N, m): The features of the set that the 
                 loss will be calculated against.
+
             y (np.ndarray of shape (N,): The target values of the set that the 
                 loss will be calculated against.
         """
@@ -51,25 +53,45 @@ class LossRecorder(object):
         _, losses = model.predict(self.X, self.y)
         self.losses[epoch] = losses
 
-def parse_csv(fn, sep=',', name_delim='"'):
+def parse_csv(fn, sep=',', name_delim=None):
     """
     Args:
         fn (str): path to the CSV file
         sep (char): Character that separates values in CSV within the same 
             line. Default value: ','
-        name_delim('"'): Character that encapsulates the names of the columns
-            in the first line of the  CSV file. Default value: '"'
+        name_delim(str): A character that encapsulates the names of the columns
+            in the header line of the  CSV file and which should be removed in 
+            order to get the names of the columns. This parameter is useful if 
+            the names of the columns are provided in a header line in a manner 
+            like "col1", "col2", "col3" (in which case the ``name_delim'' should 
+            be '"'. If ``name_delim'' is None, then no character is removed from 
+            the names. Default value: None
 
     Returns:
         A np.ndarray with the values found in fn and list of the extracted 
         names of the columns 
     """
-    lines = [ line.strip() for line in open(fn) ] 
+
+    lines = []
+
+    for line in open(fn):
+
+        # remove whitespace character from the beginning and the end
+        line = line.strip()
+
+        # ignore comments and empty lines
+        if len(line) == 0 or line[0] == '#':
+            continue
+
+        lines.append(line)
+
     assert len(lines) > 1, 'No lines found in {0}'.format(fn)
 
     # The first line has the names of the columns
     names = lines.pop(0).split(sep)
-    names = [ name.strip(name_delim) for name in names ]
+
+    if name_delim is not None:
+        names = [ name.strip(name_delim) for name in names ]
 
     N = len(lines)
     m = len(names)
@@ -83,6 +105,29 @@ def parse_csv(fn, sep=',', name_delim='"'):
     return values, names
 
 def sample_sets_from_csv(csv_fn, target_name, validation_set_ratio, norm_features):
+    """
+    Args:
+        csv_fn (str): path to the CSV file
+        target_name (str): The name of the target variable. If ``None'', the 
+            variable corresponding to the last column of ``csv_fn'' is treated 
+            as the target variable
+        validation_set_ratio (float): A number between 0 and 1 indicating the 
+            percentage of the dataset that should be employed as the validation 
+            set for the generation of the plot
+
+    Returns:
+        A list with the following four elements: 
+
+            target_name (str): The actual name of the target variable. This 
+            will differ from the ``target_name'' input argument only when the 
+            latter has a value of ``None''
+            X_train (np.ndarray): The features of the sampled training set
+            y_train (np.ndarray): The target values of the sampled training set
+                                  (vector)
+            X_valid (np.ndarray): The features of the sampled validation set
+            y_valid (np.ndarray): The target values of the sampled validation 
+                                  set (vector)
+    """
 
     values, names = parse_csv(csv_fn)
 
@@ -128,29 +173,24 @@ def sample_sets_from_csv(csv_fn, target_name, validation_set_ratio, norm_feature
 
 def plot(method_names, losses_method_a, loss_method_b=None, 
          title='', xlabel='', ylabel='', loglog=False):
-    """ Displays a plot of supplied values along with a horizontal line.
+    """ 
+    Displays a plot of the progression of the validation loss during training.
    
-        Args:
-            method_names (an iteratable object with at least one string): 
-                method_names[0] is the name of the method that corresponds to 
-                ``losses_method_a'' and method_names[1] (if supplied) is the 
-                name of the method that corresponds to ``loss_method_b''.
-
-            losses_method_a (an np.ndarray vector): The values of the plot of 
-                the first method.
-
-            loss_method_b (float): The value of the second method, which will 
-            correspond to the height of the plotted horizontal line. If the 
-                length of ``method_names'' is 1, this argument is ignored.
-
-            title (str): The title of the figure. Default value: ''
-
-            xlabel (str): The title of the horizontal axis. Default value: ''
-
-            ylabel(str): The title of the vertical axis. Default value: ''
-
-            loglog(bool): Whether to use a logarithmic scale for the two axes. 
-                Default value: False
+    Args:
+        method_names (an iteratable object with at least one string): 
+            method_names[0] is the name of the method that corresponds to 
+            ``losses_method_a'' and method_names[1] (if supplied) is the name 
+            of the method that corresponds to ``loss_method_b''
+        losses_method_a (an np.ndarray vector): The values of the plot of the 
+            first method
+        loss_method_b (float): The value of the second method, which will 
+        correspond to the height of the plotted horizontal line. If the length 
+        of ``method_names'' is 1, this argument is ignored.
+        title (str): The title of the figure. Default value: ''
+        xlabel (str): The title of the horizontal axis. Default value: ''
+        ylabel(str): The title of the vertical axis. Default value: ''
+        loglog(bool): Whether to use a logarithmic scale for the two axes. 
+            Default value: False
     """
     import matplotlib.pyplot as plt
     
@@ -180,19 +220,19 @@ def plot(method_names, losses_method_a, loss_method_b=None,
 def main(csv_fn, target_name, neuron_class, validation_set_ratio, lrate, epochs, 
          norm_features=True, lr_baseline=False, loglog=False):
     """
-        Args: 
-            csv_fn (str): The path to the CSV file with the dataset.
-            target_name (str): The name of the variable to be regressed. If 
-                ``None'', the variable corresponding to the last column of 
-                ``csv_fn'' is treated as the target variable.
-            validation_set_ratio (float): A number between 0 and 1 indicating 
-                the percentage of the dataset that should be employed as the 
-                validation set for the generation of the plot.
-            lrate (float): Learning rate for the gradient descent.
-            epochs (int): Number of gradient descent iterations.
-            norm_features (bool): Whether the values of the feature set should 
-                be linearly rescaled so that the training set has zero mean and 
-                a standard deviation of one. Default value: True
+    Args: 
+        csv_fn (str): The path to the CSV file with the dataset
+        target_name (str): The name of the variable to be regressed. If 
+            ``None'', the variable corresponding to the last column of 
+            ``csv_fn'' is treated as the target variable
+        validation_set_ratio (float): A number between 0 and 1 indicating the 
+            percentage of the dataset that should be employed as the validation 
+            set for the generation of the plot
+        lrate (float): Learning rate for the gradient descent
+        epochs (int): Number of gradient descent iterations
+        norm_features (bool): Whether the values of the feature set should 
+            be linearly rescaled so that the training set has zero mean and 
+            a standard deviation of one. Default value: True
     """
 
     # sample training and validation sets
@@ -201,29 +241,33 @@ def main(csv_fn, target_name, neuron_class, validation_set_ratio, lrate, epochs,
 
     # an object to record the loss on the validing set after every epoch
     recorder = LossRecorder(X=X_valid, y=y_valid, epochs=epochs)
-
-    # predict with the neuron model
-    neuron_y_hat, neuron_params = models.predict_with_neuron(neuron_class, 
-                                    X_train, y_train, X_valid, 
-                                    lrate, epochs, recorder.record)
-    neuron_final_loss = neuron_class.loss(neuron_y_hat, y_valid)
-    neuron_descr = neuron_class.description()
-
+    
+    print('\nSize of training set: {0}'.format(X_train.shape[0]))
+    print('Size of validation set: {0}'.format(X_valid.shape[0]))
+    print('Dimensionality of feature space: {0}\n'.format(X_train.shape[1]))
     print('The loss with {0} is: {1}'.format(neuron_descr, neuron_final_loss))
     print('The parameteres of {0} are: \n{1!s}'.format(neuron_descr, 
                                                                neuron_params))
+    # predict with the neuron model
+    stdout.cout('Training... ') 
+    cpu_start = time.clock()
+    neuron_y_hat, neuron_params = models.predict_with_neuron(neuron_class, 
+                                    X_train, y_train, X_valid, 
+                                    lrate, epochs, recorder.record)
+    cpu_end = time.clock()
+    stdou.cout('ok. CPU elapsed time: {0!s}'.format(cpu_end - cup_start))
+
+    neuron_final_loss = neuron_class.loss(neuron_y_hat, y_valid)
+    neuron_descr = neuron_class.description()
 
     if lr_baseline:
-#        lr_y_hat, lr_params = models.predict_with_linear_regression(
-#                                                    X_train, y_train, X_valid)
-#        lr_loss = M.rmse(neuron_y_hat, y_valid)
-        lr_y_hat, lr_params = models.predict_with_logistic_regression(
+        lr_y_hat, lr_params = models.predict_with_linear_regression(
                                                     X_train, y_train, X_valid)
-        lr_loss = M.cross_entropy(neuron_y_hat, y_valid) / y_valid.shape[0]
+        lr_loss = M.rmse(neuron_y_hat, y_valid)
         lr_name = 'Linear Regression model'
         print('The RMSE loss with a {0} is: {1}'.format(lr_name, lr_loss))
         print('The parameteres of the {0} are: \n{1!s}\n'.format(
-                                                            lr_name, lr_params))
+                                                          lr_name, lr_params))
         method_names = (neuron_descr, lr_name)
     else:
         method_names = (neuron_descr, )
