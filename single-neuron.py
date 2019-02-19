@@ -297,8 +297,8 @@ if __name__ == '__main__':
     np.set_printoptions(precision=4, suppress=True)
 
     parser = argparse.ArgumentParser(
-                description='Regression and classification using a single '
-                            'neuron model, trained with gradient descent.', 
+                description='Supervised learning using a single neuron model, '
+                            'trained with batch gradient descent.', 
                 formatter_class=argparse.ArgumentDefaultsHelpFormatter, 
                 epilog='See the README.md file for more details')
 
@@ -310,9 +310,9 @@ if __name__ == '__main__':
                         required=True)
     
     parser.add_argument('--target-name', 
-                        help='The name of the variable to be regressed. If none'
-                             ' is given then the last variable of the CSV is'
-                             ' used as such', 
+                        help='The name of the target variable. If it is not '
+                        'specified then the last column of the supplied CSV '
+                        'file is used as such', 
                         default=None, 
                         type=str, 
                         metavar='NAME')

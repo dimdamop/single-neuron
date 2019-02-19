@@ -11,9 +11,7 @@ def sigmoid(x):
 def cross_entropy(y_hat, y):
 
     eps = np.finfo(float).eps
-
-    label1_threshold = (y.max() + y.min()) / 2
-    y1 = y > label1_threshold
+    y1 = y > 0
     y0 = np.logical_not(y1)
     part1 = np.log(sigmoid(y_hat[y1]) + eps).sum()
     part0 = np.log(1. - sigmoid(y_hat[y0]) + eps).sum()
