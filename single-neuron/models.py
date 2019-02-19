@@ -48,56 +48,56 @@ class Neuron(object):
         return self.theta[1:]
 
     def activation(self, stimu):
-    """
-    The activation function
+        """
+        The activation function
 
-    Args:
-        stimu (np.ndarray of shape N,): The stimulation of the neuron, i.e. the 
-            weighted average of its inputs
-    Returns:
-        The value of the activation function
-    """
+        Args:
+            stimu (np.ndarray of shape N,): The stimulation of the neuron, i.e. 
+                the weighted average of its inputs
+        Returns:
+            The value of the activation function
+        """
         raise NotImplementedError
 
     def gradient_of_loss(self, Xn, y):
-    """
-    The gradient of the loss function with respect to the parameters of the 
-    model
- 
-    Args:
-        Xn (np.ndarray of shape N,m): The values of the features for the sample 
-            points that the gradient should be calculated. 
-            **Important note**: The first column of Xn should have only 1s
-        y (np.ndarray of shape N,): The ground truth values of the target 
-            variable for the given samples.
-    Returns:
-        The sum of the gradients of the loss function for all the supplied 
-        samples
-    """
+        """
+        The gradient of the loss function with respect to the parameters of the 
+        model
+     
+        Args:
+            Xn (np.ndarray of shape N,m): The values of the features for the 
+                sample points that the gradient should be calculated. 
+                **Important note**: The first column of Xn should have only 1s.
+            y (np.ndarray of shape N,): The ground truth values of the target 
+                variable for the given samples.
+        Returns:
+            The sum of the gradients of the loss function for all the supplied 
+            samples
+        """
         raise NotImplementedError
 
     def predict(self, X, y=None):
-    """
-    Makes a prediction for the target value given the current values of the 
-    parameters of the model
+        """
+        Makes a prediction for the target value given the current values of the 
+        parameters of the model
 
-    Args:
-        Xn (np.ndarray of shape N,m): The values of the features for the sample 
-            points that the gradient should be calculated. 
-        y (optional, np.ndarray of shape N,): The ground truth values of the 
-            target variable for the given samples. 
-    Returns:
-        An nd.array of shape N, with the predictions of the model. If the 'y' 
-        has been provided, then it additionally returns the sum of the loss for 
-        the given samples.
-    """
+        Args:
+            Xn (np.ndarray of shape N,m): The values of the features for the 
+                sample points that the gradient should be calculated. 
+            y (optional, np.ndarray of shape N,): The ground truth values of the 
+                target variable for the given samples. 
+        Returns:
+            An nd.array of shape N, with the predictions of the model. If the 
+            'y' has been provided, then it additionally returns the sum of the 
+            loss for the given samples.
+        """
         stimu = X.dot(self.weights()) + self.bias()
         y_hat = self.activation(stimu)
 
-        if y is None:
+        if y is None: 
             return y_hat 
-        else:
-            return y_hat, self.loss(y_hat, y)
+        else: 
+            return y_hat, self.loss(y_hat, y) 
 
     def fit(self, X, y, lrate, epochs, on_epoch_end_callback=None):
         """ Training the neuron using gradient descent on the loss function
