@@ -10,7 +10,7 @@
 ```
 single-neuron.py [-h] --csv FILENAME [--target-name NAME]
                  [--validation-set-ratio RATIO] [--epochs EPOCHS]
-                 [--lrate LRATE] [--no-norm] [--loglog]
+                 [--lrate LRATE] [--no-norm] [--lr-baseline] [--loglog]
 ```
 
 # Description
