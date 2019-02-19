@@ -3,16 +3,14 @@
 # Author: Dimitrios Damopoulos
 # MIT license (see LICENCE.txt in the top-level folder)
 
-""" A script for training and using a single linear neuron as a regressor.
-
-The following functionality is provided by this script: (a) A class for training 
-a single linear neuron using gradient descent and the RMSE loss; (b) some basic 
-functionality for loading a dataset from a CSV; (c) plotting the performance of 
-trained regressor on a validation set and comparing it with the performance of 
-linear regression. 
+"""
+Batch gradient descent on a model of a single artificial neuron and plotting of 
+the progression of the loss on some validation set during the gradient descent 
+iterations.
 
 This is a standalone script, i.e. it can be invoked directly in the command
-line. Refer to the accompanying README.md for details. """
+line. Consult the accompanying README.md for details.
+"""
 
 from sys import stdout
 import time
@@ -26,14 +24,12 @@ import math_utils as M
 class LossRecorder(object):
     """ Records the loss of some method for different training iterations """
 
-
     def __init__(self, X, y, epochs): 
         """
         Args:
-            X (np.ndarray of shape (N, m): The features of the set that the 
+            X (np.ndarray of shape N, m): The features of the set that the 
                 loss will be calculated against.
-
-            y (np.ndarray of shape (N,): The target values of the set that the 
+            y (np.ndarray of shape N,): The target values of the set that the 
                 loss will be calculated against.
         """
         self.X = X 
@@ -41,20 +37,24 @@ class LossRecorder(object):
         self.losses = np.full(epochs, np.nan)
 
     def record(self, epoch, model):
-        """ Records a measurement
+        """ 
+        Records a measurement
         
         Args:
             epoch (int): the index of the training iteration this measurement 
                 corresponds to
             model: An object that has a member function named ``prediction'' 
                 that can accept the self.X np.ndarray as an argument (for 
-                example, a LinearActivationNeuron object).
+                example, a Neuron object).
         """
         _, losses = model.predict(self.X, self.y)
         self.losses[epoch] = losses
 
 def parse_csv(fn, sep=',', name_delim=None):
     """
+    Parses a CSV file and returns the extracted values as an np.ndarray and a 
+    list with the names of the columns
+
     Args:
         fn (str): path to the CSV file
         sep (char): Character that separates values in CSV within the same 
@@ -68,8 +68,8 @@ def parse_csv(fn, sep=',', name_delim=None):
             the names. Default value: None
 
     Returns:
-        A np.ndarray with the values found in fn and list of the extracted 
-        names of the columns 
+        A np.ndarray with the values found in fn and a list with the names of 
+        the columns 
     """
 
     lines = []
@@ -118,15 +118,17 @@ def sample_sets_from_csv(csv_fn, target_name, validation_set_ratio, norm_feature
     Returns:
         A list with the following four elements: 
 
-            target_name (str): The actual name of the target variable. This 
+        target_name (str): The actual name of the target variable. This 
             will differ from the ``target_name'' input argument only when the 
-            latter has a value of ``None''
-            X_train (np.ndarray): The features of the sampled training set
-            y_train (np.ndarray): The target values of the sampled training set
-                                  (vector)
-            X_valid (np.ndarray): The features of the sampled validation set
-            y_valid (np.ndarray): The target values of the sampled validation 
-                                  set (vector)
+            latter has a value of ``None''.
+        X_train (np.ndarray of shape N1,m): The features of the sampled training 
+            set.
+        y_train (np.ndarray of shape N1,): The target values of the sampled 
+            training set.
+        X_valid (np.ndarray of shape N2,m): The features of the sampled 
+            validation set.
+        y_valid (np.ndarray of shape N2,(): The target values of the sampled 
+            validation set.
     """
 
     values, names = parse_csv(csv_fn)

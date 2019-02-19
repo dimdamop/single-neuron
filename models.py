@@ -23,10 +23,21 @@ class Neuron(object):
 
     @classmethod
     def description(cls):
+    """ Returns a human-readable description of the class """
         raise NotImplementedError
 
     @classmethod
     def loss(cls, y_hat, y):
+    """ 
+    The loss function
+    
+    Args:
+        y_hat (np.ndarray of shape N,): The vector of the predictions
+        y (np.ndarray of shape N,): The vector of the ground truth values
+
+    Returns:
+        The value of the loss function
+    """
         raise NotImplementedError
 
     def bias(self):
@@ -36,13 +47,49 @@ class Neuron(object):
         return self.theta[1:]
 
     def activation(self, stimu):
+    """
+    The activation function
+
+    Args:
+        stimu (np.ndarray of shape N,): The stimulation of the neuron, i.e. the 
+            weighted average of its inputs
+    Returns:
+        The value of the activation function
+    """
         raise NotImplementedError
 
-    def gradient_of_loss(self):
+    def gradient_of_loss(self, Xn, y):
+    """
+    The gradient of the loss function with respect to the parameters of the 
+    model
+ 
+    Args:
+        Xn (np.ndarray of shape N,m): The values of the features for the sample 
+            points that the gradient should be calculated. 
+            **Important note**: The first column of Xn should have only 1s
+        y (np.ndarray of shape N,): The ground truth values of the target 
+            variable for the given samples.
+    Returns:
+        The sum of the gradients of the loss function for all the supplied 
+        samples
+    """
         raise NotImplementedError
 
     def predict(self, X, y=None):
+    """
+    Makes a prediction for the target value given the current values of the 
+    parameters of the model
 
+    Args:
+        Xn (np.ndarray of shape N,m): The values of the features for the sample 
+            points that the gradient should be calculated. 
+        y (optional, np.ndarray of shape N,): The ground truth values of the 
+            target variable for the given samples. 
+    Returns:
+        An nd.array of shape N, with the predictions of the model. If the 'y' 
+        has been provided, then it additionally returns the sum of the loss for 
+        the given samples.
+    """
         stimu = X.dot(self.weights()) + self.bias()
         y_hat = self.activation(stimu)
 
@@ -151,9 +198,10 @@ class ReluNeuron(Neuron):
 
 
 class SigmoidNeuron(Neuron):
-    
-    """ A model of a neuron with a sigmoid activation function trained on the 
-    log-likelihood loss (which is basically the cross-entropy loss)"""
+    """ 
+    A model of a neuron with a sigmoid activation function trained on the 
+    log-likelihood loss (which is basically the cross-entropy).
+    """
 
     def activation(self, stimu):
         return M.sigmoid(stimu)
