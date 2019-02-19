@@ -12,7 +12,7 @@ This is a standalone script, i.e. it can be invoked directly in the command
 line. Consult the accompanying README.md for details.
 """
 
-from sys import stdout
+from sys import stdout as cout
 import time
 from math import floor
 import numpy as np
@@ -247,20 +247,22 @@ def main(csv_fn, target_name, neuron_class, validation_set_ratio, lrate, epochs,
     print('\nSize of training set: {0}'.format(X_train.shape[0]))
     print('Size of validation set: {0}'.format(X_valid.shape[0]))
     print('Dimensionality of feature space: {0}\n'.format(X_train.shape[1]))
-    print('The loss with {0} is: {1}'.format(neuron_descr, neuron_final_loss))
-    print('The parameteres of {0} are: \n{1!s}'.format(neuron_descr, 
-                                                               neuron_params))
     # predict with the neuron model
-    stdout.cout('Training... ') 
+    cout.write('Training... ')
+    cout.flush()
     cpu_start = time.clock()
     neuron_y_hat, neuron_params = models.predict_with_neuron(neuron_class, 
                                     X_train, y_train, X_valid, 
                                     lrate, epochs, recorder.record)
     cpu_end = time.clock()
-    stdou.cout('ok. CPU elapsed time: {0!s}'.format(cpu_end - cup_start))
-
-    neuron_final_loss = neuron_class.loss(neuron_y_hat, y_valid)
+    cout.write('ok. CPU elapsed time: {0:.3f} s\n\n'.format(
+                                                        cpu_end - cpu_start))
+    
     neuron_descr = neuron_class.description()
+    neuron_final_loss = neuron_class.loss(neuron_y_hat, y_valid)
+    print('The loss with {0} is: {1}'.format(neuron_descr, neuron_final_loss))
+    print('The parameteres of {0} are: \n{1!s}'.format(neuron_descr, 
+                                                               neuron_params))
 
     if lr_baseline:
         lr_y_hat, lr_params = models.predict_with_linear_regression(
