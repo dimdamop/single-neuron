@@ -4,9 +4,21 @@
 The only external dependancy for the core functionality of `neuron.py` is numpy. scikit-learn is used only during unit testing in order to verify that the implementation of scikit-learn agree with ours on the results.
 
 # Requirements
-* Python
-* Matplotlib
-* scikit-learn
+
+`neuron.py` has only basic dependencies and should work on quite old environment. That being said, it has been tested with the following configurations:
+
+* Python 2 environment:
+    * Python: 2.7.12
+    * Matplotlib: 1.5.1
+    * numpy: 1.11.0
+    * scikit-learn: 0.19.1 (only necessary if you want to run the unit tests)
+* Python 3 environment:
+    * Python: 3.5.2
+    * Matplotlib: 3.2.0
+    * numpy: 1.16.1
+    * scikit-learn: 0.19.1 (only necessary if you want to run the unit tests)
+
+
 
 # Syntax
 ```
