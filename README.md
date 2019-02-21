@@ -1,7 +1,7 @@
 # Synopsis
-`single-neuron.py`: Batch gradient descent on a model of a single artificial neuron and plotting of the progression of the loss on some validation set during the gradient descent iterations. The following activation functions are supported: The identity (which results in a linear model), the ReLU and the sigmoid. 
+`neuron.py`: Batch gradient descent on a model of a single artificial neuron and plotting of the progression of the loss on some validation set during the gradient descent iterations. The following activation functions are supported: The identity (which results in a linear model), the ReLU and the sigmoid. 
 
-The only external dependancy for the core functionality of `single-neuron.py` is numpy. skikit-learn is used only during unit testing in order to verify that the implementation of skikit-learn agree with ours on the results.
+The only external dependancy for the core functionality of `neuron.py` is numpy. skikit-learn is used only during unit testing in order to verify that the implementation of skikit-learn agree with ours on the results.
 
 # Requirements
 * Python
@@ -10,16 +10,21 @@ The only external dependancy for the core functionality of `single-neuron.py` is
 
 # Syntax
 ```
-single-neuron.py [-h] --csv FILENAME [--target-name NAME]
+neuron.py [-h] --csv FILENAME [--target-name NAME]
                  [--validation-set-ratio RATIO] [--epochs EPOCHS]
                  [--lrate LRATE] [--no-norm] [--lr-baseline] [--loglog]
-```
 
+** Important note **
+This python package uses absolute import statements. That means that if the `single-neuron` package has not been installed to some standard place that Python normally looks to resolve import statement, then you should explicitly specify the top-level folder of the package. The easiest way to do so is via the PYTHONPATH environmental variable. For example, if you are already the top-level folder you can run the `neuron.py` as in the following example:
+
+```console
+user@system:~$ PYTHONPATH=$PWD single_neuron/neuron.py -h
+```
 # Description
 
 The values of the parameters of the neuron model are estimated using batch gradient descent on some loss function. For the identity and the ReLU activation function, the loss is the RMSE (Root Mean Square Error) between the predicted values and the actual ones of the target variable. For the sigmoid activation function (which is intended to be used for binary classification tasks), the cross-entropy is employed as the loss function. Both of these are pretty standard choices and they can be justified by a maximum-likehood analysis of a regression task using a linear model and of a classification task using logistic regression.
 
-`single-neuron.py` compuses the loss on a validation set at the end of every iteration of the gradient descent and it finally generates a plot in order to visualize the progression of these measurements.  Optionally, the performance achieved with the scikit-learn implementation of linear regression can be used for comparison, which is is displayed as a dotted horizontal line on the same plot.
+`neuron.py` compuses the loss on a validation set at the end of every iteration of the gradient descent and it finally generates a plot in order to visualize the progression of these measurements.  Optionally, the performance achieved with the scikit-learn implementation of linear regression can be used for comparison, which is is displayed as a dotted horizontal line on the same plot.
 
 ## Command line arguments
 
@@ -41,7 +46,7 @@ The name of the target variable. If it is not specified then the last column of 
 * --validation-set-ratio RATIO
 The fraction of the dataset to be used for validation.
 * --activation { sigm, identity, relu } 
-Which activation function to use for the neuron model. For the identity activation function and for ReLU, the loss function that is used is the RMSE. For the sigmoid, it is the cross-entropy. **Note**: If you specify the sigmoid activation function then `single-neuron.py` will treat the target variable as a binary one. In particular, values of the target value which are above zero as considered as belonging to one class -- i.e. they get the label "1"-- and the rest as belonging the the complementary class -- i.e. they get the label "0". (default: identity).
+Which activation function to use for the neuron model. For the identity activation function and for ReLU, the loss function that is used is the RMSE. For the sigmoid, it is the cross-entropy. **Note**: If you specify the sigmoid activation function then `neuron.py` will treat the target variable as a binary one. In particular, values of the target value which are above zero as considered as belonging to one class -- i.e. they get the label "1"-- and the rest as belonging the the complementary class -- i.e. they get the label "0". (default: identity).
 * --epochs EPOCHS
 Number of epochs (iterations) to use for gradient descent (default: 200).
 * --lrate LRATE
@@ -57,9 +62,9 @@ Use a logarithmic scale for the two axes of the plot. This can be useful if you 
 
 ## Invocation with the default values 
 
-As noted in [Command line arguments](#command-line-arguments) by default `single-neuron.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. For the example dataset that comes with the distribution ("dataset/boston.csv"), the results look like this:
+As noted in [Command line arguments](#command-line-arguments) by default `neuron.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. For the example dataset that comes with the distribution ("dataset/boston.csv"), the results look like this:
 ```console
-user@system:~$ single-neuron.py --csv dataset/boston.csv
+user@system:~$ neuron.py --csv dataset/boston.csv
 
 The loss with a single linear neuron is: 6.59579363684324
 The parameteres of a single linear neuron are: 
@@ -80,7 +85,7 @@ Notice how the values for the bias and the weights of the neuron are very close 
 
 Instead of 200 epochs, let' s specify 10000: 
 ```console
-user@system:~$ single-neuron.py --csv dataset/boston.csv --epochs 10000 --lr-baseline --loglog
+user@system:~$ neuron.py --csv dataset/boston.csv --epochs 10000 --lr-baseline --loglog
 The loss with a single linear neuron is: 5.148498158724566
 The parameteres of a single linear neuron are: 
 [22.7974 -1.0409  1.1265  0.0578  0.7052 -2.0971  2.5988  0.073  -3.1709
@@ -98,14 +103,14 @@ Within the displayed accuracy, the parameters of the neuron are equal to those l
 ## Convergence
 Gradient descent, at least as implemented here, is not guaranteed to converge. This can happen when the learning rate is too large for the dataset at hand.
 
-By default, `single-neuron.py` does not apply gradient descent  to the supplied dataset, but to a _linearly rescaled_ version of it. This operation attempts to bring all the features to the same scale, which can improve the convergence properties of gradient descent, especially if the some features are originally in very different scales.
+By default, `neuron.py` does not apply gradient descent  to the supplied dataset, but to a _linearly rescaled_ version of it. This operation attempts to bring all the features to the same scale, which can improve the convergence properties of gradient descent, especially if the some features are originally in very different scales.
 
 For example, if we deactivate the rescaling operation for the "boston.csv" dataset by passing the `--no-norm`, we have to use extremely low learning rates to achieve convergence, which also implies that the training process takes much more time to complete.
 
 In fact, even with a learning rate as low as 10</sup>-5</sup>, gradient descent does not converge if the features are not normalized. This can be observed on the results and the plot below:
 
 ```console
-user@system:~$ single-neuron.py --csv dataset/boston.csv --epochs 10 --lrate 0.00001 --lr-baseline --no-norm
+user@system:~$ neuron.py --csv dataset/boston.csv --epochs 10 --lrate 0.00001 --lr-baseline --no-norm
 The loss with a single linear neuron is: 48625.10860971238
 The parameteres of a single linear neuron are: 
 [  -1015.0908   -4616.5819   -9997.5768  -12165.4978     -63.4424
@@ -122,11 +127,11 @@ The parameteres of linear regression baseline are:
 
 ## Classification
 
-The examples above all train a neuron model with the default activation function, that is the identity. There are also two non-linear activation functions implemented in `single-neuron.py`: The _ReLU_ and the _sigmoid_. Even though the non-linearity provided by ReLU might seem too simplistic, it is of course used in the hidden layers of almost all of the powerful deep architecture available today.
+The examples above all train a neuron model with the default activation function, that is the identity. There are also two non-linear activation functions implemented in `neuron.py`: The _ReLU_ and the _sigmoid_. Even though the non-linearity provided by ReLU might seem too simplistic, it is of course used in the hidden layers of almost all of the powerful deep architecture available today.
 
 In supervised classification tasks, we are typically interested in getting estimates on the probabilities that a given sample belongs to each of the classes of some predefined set. The output of the identity activation function and of ReLU are unsuitable for this, since they do not have a direct probabilistic interpretation. Instead, the standard choice for binary classification is the sigmoid activation function which, among its other nice properties, it guaranties that the output lies in the (0, 1) interval. The generalization of the sigmoid for more than two classes is called _softmax_ and it is the default choice for multilabel classification tasks.
 
-Regarding gradient descent, one could still use the RMSE as the loss even with the sigmoid activation function, but the choice that makes much more sense in classification problems in the _cross-entropy_. Accordingly, when the `--activation sigmoid` argument is passed to `single-neuron.py`, it will use the cross-entropy as the loss function. As a note, the RMSE loss for linear regression and the cross-entropy loss for logistic regression both arise from a maximum-likelihood estimation of the parameters of the model (under some assumptions of the underlying distributions of the parameters).
+Regarding gradient descent, one could still use the RMSE as the loss even with the sigmoid activation function, but the choice that makes much more sense in classification problems in the _cross-entropy_. Accordingly, when the `--activation sigmoid` argument is passed to `neuron.py`, it will use the cross-entropy as the loss function. As a note, the RMSE loss for linear regression and the cross-entropy loss for logistic regression both arise from a maximum-likelihood estimation of the parameters of the model (under some assumptions of the underlying distributions of the parameters).
 
 Below is an example using the sigmoid for predicting the "chas" variable of the "boston.csv" dataset. As noted in [Command line arguments](#command-line-arguments), when using this activation function the target variable is treated as a binary one.
 
