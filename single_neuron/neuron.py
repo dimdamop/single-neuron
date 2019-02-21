@@ -283,7 +283,7 @@ def main(csv_fn, target_name, neuron_class, validation_set_ratio, lrate, epochs,
     if lr_baseline:
         lr_y_hat, lr_params = models.predict_with_linear_regression(
                                                     X_train, y_train, X_valid)
-        lr_loss = M.rmse(neuron_y_hat, y_valid)
+        lr_loss = M.rmse(lr_y_hat, y_valid)
         lr_name = 'Linear Regression model'
         print('The RMSE loss with a {0} is: {1}'.format(lr_name, lr_loss))
         print('The parameteres of the {0} are: \n{1!s}\n'.format(

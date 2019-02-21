@@ -220,7 +220,7 @@ class SigmoidNeuron(Neuron):
         N = y.shape[0]
         assert N > 0, ('At least one sample is required in order to compute the '
                       'log-likehood loss')
-        return M.cross_entropy(y_hat, y) / N 
+        return M.cross_entropy_with_one_hot_vector(y_hat, y) / N 
 
     def gradient_of_loss(self, Xn, y):
 
