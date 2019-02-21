@@ -1,7 +1,7 @@
 # Synopsis
 `neuron.py`: Batch gradient descent on a model of a single artificial neuron and plotting of the progression of the loss on some validation set during the gradient descent iterations. The following activation functions are supported: The identity (which results in a linear model), the ReLU and the sigmoid. 
 
-The only external dependancy for the core functionality of `neuron.py` is numpy. skikit-learn is used only during unit testing in order to verify that the implementation of skikit-learn agree with ours on the results.
+The only external dependancy for the core functionality of `neuron.py` is numpy. scikit-learn is used only during unit testing in order to verify that the implementation of scikit-learn agree with ours on the results.
 
 # Requirements
 * Python
@@ -13,6 +13,7 @@ The only external dependancy for the core functionality of `neuron.py` is numpy.
 neuron.py [-h] --csv FILENAME [--target-name NAME]
                  [--validation-set-ratio RATIO] [--epochs EPOCHS]
                  [--lrate LRATE] [--no-norm] [--lr-baseline] [--loglog]
+```
 
 ** Important note **
 This python package uses absolute import statements. That means that if the `single-neuron` package has not been installed to some standard place that Python normally looks to resolve import statement, then you should explicitly specify the top-level folder of the package. The easiest way to do so is via the PYTHONPATH environmental variable. For example, if you are already the top-level folder you can run the `neuron.py` as in the following example:
