@@ -15,7 +15,7 @@ neuron.py [-h] --csv FILENAME [--target-name NAME]
                  [--lrate LRATE] [--no-norm] [--lr-baseline] [--loglog]
 ```
 
-** Important note **
+**Important note**
 This python package uses absolute import statements. That means that if the `single-neuron` package has not been installed to some standard place that Python normally looks to resolve import statement, then you should explicitly specify the top-level folder of the package. The easiest way to do so is via the PYTHONPATH environmental variable. For example, if you are already the top-level folder you can run the `neuron.py` as in the following example:
 
 ```console
@@ -65,17 +65,23 @@ Use a logarithmic scale for the two axes of the plot. This can be useful if you 
 
 As noted in [Command line arguments](#command-line-arguments) by default `neuron.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. For the example dataset that comes with the distribution ("dataset/boston.csv"), the results look like this:
 ```console
-user@system:~$ neuron.py --csv dataset/boston.csv
+user@system:~$ PYTHONPATH=$PWD single_neuron/neuron.py --csv datasets/boston.csv --lr-baseline
 
-The loss with a single linear neuron is: 6.59579363684324
-The parameteres of a single linear neuron are: 
-[22.5668 -0.963   1.0831 -0.0691  0.7951 -1.7578  2.9326 -0.2769 -2.981
-  2.5234 -1.9742 -1.9826  0.9789 -3.3682]
+Size of training set: 455
+Size of validation set: 51
+Dimensionality of feature space: 13
 
-  The loss with linear regression baseline is: 6.594923271665585
-  The parameteres of linear regression baseline are: 
-  [22.5668 -0.9749  1.1018 -0.0097  0.7857 -1.7737  2.9219 -0.2669 -2.9818
-    2.67   -2.1389 -1.9891  0.9801 -3.3747]
+Training... ok. CPU elapsed time: 0.014 s
+
+The loss with Neuron with an identity activation function (trained on RMSE) is: 5.32950596176643
+The parameteres of Neuron with an identity activation function (trained on RMSE) are: 
+[22.3512 -0.42    0.8487  0.4362  0.7    -1.78    2.6725  0.0444 -2.6572
+  2.6671 -2.2879 -2.0309  0.9817 -4.1463]
+The RMSE loss with a Linear Regression model is: 5.339050992809469
+The parameteres of the Linear Regression model are: 
+[22.3512 -0.4382  0.8584  0.4698  0.6953 -1.7861  2.6654  0.0531 -2.654
+  2.7589 -2.3772 -2.0368  0.9828 -4.1529]
+
 ```
 
 Notice how the values for the bias and the weights of the neuron are very close to those of the linear regression model. The generated plot is shown below:
@@ -86,23 +92,30 @@ Notice how the values for the bias and the weights of the neuron are very close 
 
 Instead of 200 epochs, let' s specify 10000: 
 ```console
-user@system:~$ neuron.py --csv dataset/boston.csv --epochs 10000 --lr-baseline --loglog
-The loss with a single linear neuron is: 5.148498158724566
-The parameteres of a single linear neuron are: 
-[22.7974 -1.0409  1.1265  0.0578  0.7052 -2.0971  2.5988  0.073  -3.1709
-  2.9265 -2.1423 -2.1238  0.7868 -3.9471]
+user@system:~$ PYTHONPATH=$PWD single_neuron/neuron.py --csv datasets/boston.csv --lr-baseline --epochs 10000 --loglog
 
-The loss with linear regression baseline is: 5.148498158724566
-The parameteres of linear regression baseline are: 
-[22.7974 -1.0409  1.1265  0.0578  0.7052 -2.0971  2.5988  0.073  -3.1709
-  2.9265 -2.1423 -2.1238  0.7868 -3.9471]
+Size of training set: 455
+Size of validation set: 51
+Dimensionality of feature space: 13
+
+Training... ok. CPU elapsed time: 0.178 s
+
+The loss with Neuron with an identity activation function (trained on RMSE) is: 6.371574886759834
+The parameteres of Neuron with an identity activation function (trained on RMSE) are: 
+[22.6136 -0.4777  0.951   0.3205  0.8137 -1.4109  2.8515 -0.153  -2.6869
+  2.3618 -2.0646 -1.7574  1.1521 -3.8975]
+The RMSE loss with a Linear Regression model is: 6.371574886759832
+The parameteres of the Linear Regression model are: 
+[22.6136 -0.4777  0.951   0.3205  0.8137 -1.4109  2.8515 -0.153  -2.6869
+  2.3618 -2.0646 -1.7574  1.1521 -3.8975]
+
 ````
 
 Within the displayed accuracy, the parameters of the neuron are equal to those learnt with linear regression. We have also specified the `--loglog` flag, which makes it a bit easier to isolate the different regions in the plot:
 ![Plot with many iterations](png/epochs-10000-lr-01.png)
 
 ## Convergence
-Gradient descent, at least as implemented here, is not guaranteed to converge. This can happen when the learning rate is too large for the dataset at hand.
+Gradient descent, at least as implemented here, is not guaranteed to converge. This can happen when the learning rate is too large for the dataset at hand. In fact, most gradient descent implementations incorporate some form of adaptive setting of the learning rate on every iteration, to improve their robustness and also to converge faster to an optimum solution. As `neuron.py` does not have any such adaptive setting of the learning rate, it is easy to observe these issues with gradient descent. 
 
 By default, `neuron.py` does not apply gradient descent  to the supplied dataset, but to a _linearly rescaled_ version of it. This operation attempts to bring all the features to the same scale, which can improve the convergence properties of gradient descent, especially if the some features are originally in very different scales.
 
@@ -111,17 +124,24 @@ For example, if we deactivate the rescaling operation for the "boston.csv" datas
 In fact, even with a learning rate as low as 10</sup>-5</sup>, gradient descent does not converge if the features are not normalized. This can be observed on the results and the plot below:
 
 ```console
-user@system:~$ neuron.py --csv dataset/boston.csv --epochs 10 --lrate 0.00001 --lr-baseline --no-norm
-The loss with a single linear neuron is: 48625.10860971238
-The parameteres of a single linear neuron are: 
-[  -1015.0908   -4616.5819   -9997.5768  -12165.4978     -63.4424
-    -575.1853   -6321.3836  -72239.3525   -3651.7908  -11098.3452
- -445384.4468  -18967.6505 -362214.0019  -13608.8978]
+user@system:~$ PYTHONPATH=$PWD single_neuron/neuron.py --csv datasets/boston.csv --lr-baseline --epochs 10 --lrate 0.00001 --no-norm
 
-The loss with linear regression baseline is: 6.074445952981716
-The parameteres of linear regression baseline are: 
-[ 39.255   -0.113    0.0562   0.0094   1.9957 -17.9045   3.4433  -0.0027
-  -1.5715   0.309   -0.013   -0.927    0.0085  -0.5059]
+Size of training set: 455
+Size of validation set: 51
+Dimensionality of feature space: 13
+
+Training... ok. CPU elapsed time: 0.004 s
+
+The loss with Neuron with an identity activation function (trained on RMSE) is: 14171800364.535336
+The parameteres of Neuron with an identity activation function (trained on RMSE) are: 
+[   42661.1836    87514.056    433197.9099   507980.0306     3191.2346
+    24129.6631   267331.7507  3008703.2428   153873.6548   464578.4799
+ 18632702.3923   793310.7758 15228519.9411   555646.5746]
+The RMSE loss with a Linear Regression model is: 5.505575979493923
+The parameteres of the Linear Regression model are: 
+[ 35.1305  -0.1755   0.041    0.0201   2.9665 -16.423    3.9555  -0.0032
+  -1.436    0.2989  -0.0124  -0.9869   0.0109  -0.532 ]
+
 ```
 
 ![Plot illustrating non-convergence](png/epochs-10-lr-1e-5-no-norm.png)
@@ -135,4 +155,22 @@ In supervised classification tasks, we are typically interested in getting estim
 Regarding gradient descent, one could still use the RMSE as the loss even with the sigmoid activation function, but the choice that makes much more sense in classification problems in the _cross-entropy_. Accordingly, when the `--activation sigmoid` argument is passed to `neuron.py`, it will use the cross-entropy as the loss function. As a note, the RMSE loss for linear regression and the cross-entropy loss for logistic regression both arise from a maximum-likelihood estimation of the parameters of the model (under some assumptions of the underlying distributions of the parameters).
 
 Below is an example using the sigmoid for predicting the "chas" variable of the "boston.csv" dataset. As noted in [Command line arguments](#command-line-arguments), when using this activation function the target variable is treated as a binary one.
+
+```console
+user@system:~$ PYTHONPATH=$PWD single_neuron/neuron.py --csv datasets/boston.csv --target-name chas --activation sigm
+
+Size of training set: 455
+Size of validation set: 51
+Dimensionality of feature space: 13
+
+Training... ok. CPU elapsed time: 0.011 s
+
+The loss with Neuron with a sigmoid activation function is: 0.41154782917323157
+The parameteres of Neuron with a sigmoid activation function are: 
+[-2.4776  0.0819  0.0943  0.7435 -0.73    1.0974 -0.1507 -0.5498  1.0252
+ -1.5481 -0.1711  0.2774  0.8668 -0.285 ]
+ 
+```
+
+![Plot illustrating non-convergence](png/target-chas-activation-sigm-default-parameters.png)
 
