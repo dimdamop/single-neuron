@@ -17,8 +17,8 @@ import time
 from math import floor
 import numpy as np
 import numpy.random as rand
-import models
-import math_utils as M
+import single_neuron.models as models
+import single_neuron.math_utils as M
 
 
 class LossRecorder(object):
@@ -58,32 +58,43 @@ def parse_csv(fn, sep=',', name_delim=None):
     Args:
         fn (str): path to the CSV file
         sep (char): Character that separates values in CSV within the same 
-            line. Default value: ','
+            line. It cannot be one of the following characters: '.' of '-'. 
+            Default value: ','
         name_delim(str): A character that encapsulates the names of the columns
             in the header line of the  CSV file and which should be removed in 
             order to get the names of the columns. This parameter is useful if 
             the names of the columns are provided in a header line in a manner 
             like "col1", "col2", "col3" (in which case the ``name_delim'' should 
             be '"'. If ``name_delim'' is None, then no character is removed from 
-            the names. Default value: None
+            the names. It cannot be one of the following characters: '.' of '-'. 
+            Default value: None
+    
+    Notes:
+        Leading or trailing whitespace characters are removed from the column 
+        names.
+        The `sep' or the `name_delim' cannot appear in the values of the CSV.
+
 
     Returns:
         A np.ndarray with the values found in fn and a list with the names of 
         the columns 
     """
 
+    assert sep != '.' and sep != '-', \
+                        "The separating character cannot be a '.' or a '-'."
     lines = []
 
-    for line in open(fn):
+    with open(fn) as fd:
+        for line in fd:
 
-        # remove whitespace character from the beginning and the end
-        line = line.strip()
+            # remove whitespace character from the beginning and the end
+            line = line.strip()
 
-        # ignore comments and empty lines
-        if len(line) == 0 or line[0] == '#':
-            continue
+            # ignore comments and empty lines
+            if len(line) == 0 or line[0] == '#':
+                continue
 
-        lines.append(line)
+            lines.append(line)
 
     assert len(lines) > 1, 'No lines found in {0}'.format(fn)
 
@@ -91,7 +102,7 @@ def parse_csv(fn, sep=',', name_delim=None):
     names = lines.pop(0).split(sep)
 
     if name_delim is not None:
-        names = [ name.strip(name_delim) for name in names ]
+        names = [ name.strip(name_delim).strip() for name in names ]
 
     N = len(lines)
     m = len(names)
@@ -104,47 +115,36 @@ def parse_csv(fn, sep=',', name_delim=None):
 
     return values, names
 
-def sample_sets_from_csv(csv_fn, target_name, validation_set_ratio, norm_features):
+def train_valid_split(dataset, target_idx, validation_set_ratio, norm_features, 
+                      modify_dataset=False):
     """
     Args:
-        csv_fn (str): path to the CSV file
-        target_name (str): The name of the target variable. If ``None'', the 
-            variable corresponding to the last column of ``csv_fn'' is treated 
-            as the target variable
+        dataset (np.ndarray of shape N,m): The whole dataset where the training 
+            and the validation set should be taken from.
+        target_idx (int): The index of the target variable in the dataset
         validation_set_ratio (float): A number between 0 and 1 indicating the 
             percentage of the dataset that should be employed as the validation 
             set for the generation of the plot
-
+        modify_dataset (bool): A flag that specifies whether the implementation 
+            is allowed to change the ``dataset'' argument. If it is not allowed 
+            to do so, then it might have to internally copy the dataset, which 
+            might increase the memory requirements considerably, depending on 
+            the size of the dataset. Default: False.
+    
     Returns:
         A list with the following four elements: 
 
-        target_name (str): The actual name of the target variable. This 
-            will differ from the ``target_name'' input argument only when the 
-            latter has a value of ``None''.
-        X_train (np.ndarray of shape N1,m): The features of the sampled training 
+        X_train (np.ndarray of shape N1,m): The features of the training set
+        y_train (np.ndarray of shape N1,): The target values of the training set
+        X_valid (np.ndarray of shape N2,m): The features of the validation set
+        y_valid (np.ndarray of shape N2,(): The target values of the validation 
             set.
-        y_train (np.ndarray of shape N1,): The target values of the sampled 
-            training set.
-        X_valid (np.ndarray of shape N2,m): The features of the sampled 
-            validation set.
-        y_valid (np.ndarray of shape N2,(): The target values of the sampled 
-            validation set.
     """
 
-    values, names = parse_csv(csv_fn)
-
-    # If a name for the target variable has been provided, we locate its index, 
-    # otherwise we treat the last variable in the csv_fn as the target one.
-    if target_name:
-        try: target_idx = names.index(target_name)
-        except ValueError:
-            print('No feature named \'{0}\' was found in the '
-                  'dataset {1}.'.format(target_name, csv_fn))
-            print('The found names are the: {0}'.format(names))
-            return
+    if modify_dataset:
+        values = dataset
     else:
-        target_idx = len(names) - 1
-        target_name = names[-1]
+        values = np.copy(dataset)
 
     # shuffle the dataset (for the sampling that follows) and separate it into 
     # features and a target variable
@@ -171,7 +171,7 @@ def sample_sets_from_csv(csv_fn, target_name, validation_set_ratio, norm_feature
         X_train = (X_train - mu) / std
         X_valid = (X_valid - mu) / std
 
-    return target_name, X_train, y_train, X_valid, y_valid
+    return X_train, y_train, X_valid, y_valid
 
 def plot(method_names, losses_method_a, loss_method_b=None, 
          title='', xlabel='', ylabel='', loglog=False):
@@ -218,28 +218,44 @@ def plot(method_names, losses_method_a, loss_method_b=None,
     ax.legend(fontsize=15)
     plt.show()
 
-
 def main(csv_fn, target_name, neuron_class, validation_set_ratio, lrate, epochs, 
          norm_features=True, lr_baseline=False, loglog=False):
     """
     Args: 
         csv_fn (str): The path to the CSV file with the dataset
-        target_name (str): The name of the variable to be regressed. If 
-            ``None'', the variable corresponding to the last column of 
-            ``csv_fn'' is treated as the target variable
+        target_name (str): The name of the variable whose value is to be 
+            predicted. If ``None'', the variable corresponding to the last 
+            column of ``csv_fn'' is treated as the target variable.
         validation_set_ratio (float): A number between 0 and 1 indicating the 
             percentage of the dataset that should be employed as the validation 
-            set for the generation of the plot
+            set for the generation of the plot.
         lrate (float): Learning rate for the gradient descent
         epochs (int): Number of gradient descent iterations
         norm_features (bool): Whether the values of the feature set should 
             be linearly rescaled so that the training set has zero mean and 
-            a standard deviation of one. Default value: True
+            a standard deviation of one. Default value: True.
     """
+    
+    dataset, names = parse_csv(csv_fn)
 
-    # sample training and validation sets
-    target_name, X_train, y_train, X_valid, y_valid = sample_sets_from_csv(csv_fn, 
-                                target_name, validation_set_ratio, norm_features)
+    # If a name for the target variable has been provided, we locate its index, 
+    # otherwise we treat the last variable in the csv_fn as the target one.
+    if target_name:
+        try: 
+            target_idx = names.index(target_name)
+        except ValueError:
+            print('No feature named \'{0}\' was found in the '
+                  'dataset stored in {1}.'.format(target_name, csv_fn))
+            print('The found names are the: {0}'.format(names))
+            return
+    else:
+        target_idx = len(names) - 1
+        target_name = names[-1]
+
+    # sample the training and validation sets
+    X_train, y_train, X_valid, y_valid = train_valid_split(dataset, target_idx, 
+                                        validation_set_ratio, norm_features, 
+                                        modify_dataset=True)
 
     # an object to record the loss on the validing set after every epoch
     recorder = LossRecorder(X=X_valid, y=y_valid, epochs=epochs)

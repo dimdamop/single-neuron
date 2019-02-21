@@ -3,7 +3,9 @@
 
 import numpy as np
 import numpy.random as random
-import math_utils as M
+import numpy.linalg as LA
+
+import single_neuron.math_utils as M
 
 class Neuron(object):
     """ A trainable model of a single neuron """
@@ -54,6 +56,7 @@ class Neuron(object):
         Args:
             stimu (np.ndarray of shape N,): The stimulation of the neuron, i.e. 
                 the weighted average of its inputs
+        
         Returns:
             The value of the activation function
         """
@@ -70,6 +73,7 @@ class Neuron(object):
                 **Important note**: The first column of Xn should have only 1s.
             y (np.ndarray of shape N,): The ground truth values of the target 
                 variable for the given samples.
+        
         Returns:
             The sum of the gradients of the loss function for all the supplied 
             samples
@@ -86,6 +90,7 @@ class Neuron(object):
                 sample points that the gradient should be calculated. 
             y (optional, np.ndarray of shape N,): The ground truth values of the 
                 target variable for the given samples. 
+        
         Returns:
             An nd.array of shape N, with the predictions of the model. If the 
             'y' has been provided, then it additionally returns the sum of the 
@@ -109,9 +114,8 @@ class Neuron(object):
             epochs (int): number of gradient descent iterations
             on_epoch_end_callback (function): A function that accepts as an 
                 argument an integer (the index of current iterator) and a 
-                LinearActivationNeuron object. This function can be used as a 
-                callback in order to perform some action at the end of the 
-                training iteration.
+                Neuron object. This function can be used as a callback in order 
+                to perform some action at the end of the training iteration.
 
         Note:
             Currently, for all the implemented activations, the loss function 
@@ -243,8 +247,8 @@ def predict_with_neuron(model_class, X_train, y_train, X_valid,
         epochs (int): number of epochs
         on_epoch_end_callback (function): A function that accepts as an 
             argument an integer (the index of current iterator) and a 
-            LinearActivationNeuron object. This function can be used as a 
-            callback in order to perform some action at the end of every epoch 
+            LinearNeuron object. This function can be used as a callback in 
+            order to perform some action at the end of every epoch 
 
     Returns:
         The predictions of the trained neuron for X_valid and a np.ndarray 
@@ -269,11 +273,12 @@ def predict_with_linear_regression(X_train, y_train, X_valid):
         The predictions of linear regression for X_valid and a np.ndarray 
         vector with the parameters of the trained model.
     """
-    from sklearn.linear_model import LinearRegression as LR
+    # Add an intercept term to simplify the equations 
+    Xn_train = np.insert(X_train, 0, 1, axis=1)
+    Xn_valid = np.insert(X_valid, 0, 1, axis=1)
 
-    model = LR()
-    model.fit(X_train, y_train)
-    predictions = model.predict(X_valid)
-    parameters = np.insert(model.coef_, 0, model.intercept_)
-    
-    return predictions, parameters
+    # solve the normal equations using the least square solver of scipy
+    theta = LA.lstsq(Xn_train, y_train, rcond=None)[0]
+    y_valid_hat = Xn_valid.dot(theta)
+
+    return y_valid_hat, theta 

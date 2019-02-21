@@ -1,6 +1,8 @@
 # Synopsis
 `single-neuron.py`: Batch gradient descent on a model of a single artificial neuron and plotting of the progression of the loss on some validation set during the gradient descent iterations. The following activation functions are supported: The identity (which results in a linear model), the ReLU and the sigmoid. 
 
+The only external dependancy for the core functionality of `single-neuron.py` is numpy. skikit-learn is used only during unit testing in order to verify that the implementation of skikit-learn agree with ours on the results.
+
 # Requirements
 * Python
 * Matplotlib
@@ -21,7 +23,7 @@ The values of the parameters of the neuron model are estimated using batch gradi
 
 ## Command line arguments
 
-There is just one required argument (the `--csv`), the rest are optional. In particular:
+There is just one required argument (the `--csv`) and the rest are optional. In particular:
 
 * -h, --help
 Show a detailed help message and exit.
@@ -48,7 +50,7 @@ Use a logarithmic scale for the two axes of the plot. This can be useful if you 
 
 ## Invocation with the default values 
 
-As noted in [Command line arguments](#command-line-arguments) by default `single-neuron.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. The results look like this:
+As noted in [Command line arguments](#command-line-arguments) by default `single-neuron.py` performs 200 iterations of gradient descent with a learning rate of 0.1 using the 10% of the dataset for validation. For the example dataset that comes with the distribution ("dataset/boston.csv"), the results look like this:
 ```console
 user@system:~$ single-neuron.py --csv dataset/boston.csv
 
