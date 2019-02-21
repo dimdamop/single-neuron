@@ -28,7 +28,14 @@ There is just one required argument (the `--csv`) and the rest are optional. In 
 * -h, --help
 Show a detailed help message and exit.
 * --csv FILENAME
-**Required**. Relative path to the CSV file with the dataset.
+**Required**. Relative path to the CSV file with the dataset. The syntax of this file is as follows: 
+    * It should contain only ASCII character (probably Unicode works too, but it has not been covered by testing yet).
+    * Every line ends with a newline character ('\n').
+    * Values in the same row and in subsequent columns are separated by a comma (',').
+    * Whitespace characters (tab, space) in the beginning and the end of the lines are ignored.
+    * If the first non-whitespace character is a '#', the entire line is ignored (commented-out lines).
+    * Empty lines or lines consisting of only whitespace are ignored.
+    * The first line that is not empty and it has not commented it out should have the human-readable names of the columns
 * --target-name NAME
 The name of the target variable. If it is not specified then the last column of the supplied CSV file is used as such.
 * --validation-set-ratio RATIO
